@@ -4,8 +4,12 @@
 *.core
 *.dSYM
 *.dvi
+*.gcda
 *.log
+*.noopt
 *.o
+*.optimized
+*.unsafe
 *~
 .DS_Store
 .cproject
@@ -15,6 +19,7 @@
 .project
 a.out
 core*
+strace.out
 tags
 tags.*
 typescript

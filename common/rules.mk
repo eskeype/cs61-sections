@@ -6,18 +6,20 @@ O ?= -O3
 ifeq ($(filter 0 1 2 3 s,$(O)),$(strip $(O)))
 override O := -O$(O)
 endif
-ifeq ($(SANITIZE),1)
+SANITIZEFLAGS :=
 ifeq ($(strip $(shell $(CC) -fsanitize=address -x c -E /dev/null 2>&1 | grep sanitize=)),)
-CFLAGS += -fsanitize=address
-else
+SANITIZEFLAGS += -fsanitize=address
+else ifeq ($(SANITIZE),1)
 $(info ** WARNING: Your C compiler does not support `-fsanitize=address`.)
 endif
 ifeq ($(strip $(shell $(CC) -fsanitize=undefined -x c -E /dev/null 2>&1 | grep sanitize=)),)
-CFLAGS += -fsanitize=undefined
-else
+SANITIZE_FLAGS += -fsanitize=undefined
+else ifeq ($(SANITIZE),1)
 $(info ** WARNING: Your C compiler does not support `-fsanitize=undefined`.)
 $(info ** You may want to install gcc-4.9 or greater.)
 endif
+ifeq ($(SANITIZE),1)
+CFLAGS += $(SANITIZEFLAGS)
 ifeq ($(ISCLANG),0)
 ifeq ($(wildcard /usr/bin/gold),/usr/bin/gold)
 CFLAGS += -fuse-ld=gold
