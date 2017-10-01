@@ -53,7 +53,7 @@ node* make_array(size_t n) {
     return ns;
 }
 
-inline size_t expensive_sum(size_t value) {
+static inline size_t expensive_sum(size_t value) {
     size_t sum = value;
     sum %= value + 1;
     sum %= value + 2;

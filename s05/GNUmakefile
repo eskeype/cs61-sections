@@ -1,4 +1,4 @@
-PROGRAMS = memsetbench traversebench memset-1 memset-2 memset-3
+PROGRAMS = memsetbench traversebench
 all: $(PROGRAMS)
 
 O = 1

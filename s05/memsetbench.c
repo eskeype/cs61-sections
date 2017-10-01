@@ -30,7 +30,7 @@ int main(int argc, char** argv) {
     int type = MEMSET_BASIC;
 
     int opt;
-    while (-1 != (opt = getopt(argc, argv, "n:r:t:"))) {
+    while ((opt = getopt(argc, argv, "n:t:r:")) != -1) {
         switch (opt) {
         case 'n':
             n = strtoul(optarg, NULL, 0);
