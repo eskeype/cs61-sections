@@ -24,6 +24,7 @@ endif
 # Object sets
 
 BOOT_OBJS = $(OBJDIR)/bootstart.o $(OBJDIR)/boot.o
+BOOT_GDB_OBJS = $(OBJDIR)/bootstart.o $(OBJDIR)/boot-gdb.o
 
 KERNEL_OBJS = $(OBJDIR)/k-exception.o $(OBJDIR)/kernel.o \
 	$(OBJDIR)/k-hardware.o $(OBJDIR)/k-loader.o $(OBJDIR)/lib.o
@@ -45,6 +46,9 @@ $(OBJDIR)/%.o: %.c $(BUILDSTAMPS)
 
 $(OBJDIR)/boot.o: $(OBJDIR)/%.o: boot.c $(BUILDSTAMPS)
 	$(call compile,-Os -fomit-frame-pointer -c $< -o $@,COMPILE)
+
+$(OBJDIR)/boot-gdb.o: $(OBJDIR)/%.o: boot.c $(BUILDSTAMPS)
+	$(call compile,-Os -fomit-frame-pointer -DGDB -c $< -o $@,COMPILE)
 
 $(OBJDIR)/%.o: %.S $(BUILDSTAMPS)
 	$(call compile,-c $< -o $@,ASSEMBLE)
@@ -71,11 +75,20 @@ $(OBJDIR)/bootsector: $(BOOT_OBJS) link/boot.ld link/shared.ld
 	$(call run,$(NM) -n $@.full >$@.sym)
 	$(call run,$(OBJCOPY) -S -O binary -j .text $@.full $@)
 
+$(OBJDIR)/bootsector-gdb: $(BOOT_GDB_OBJS) link/boot.ld link/shared.ld
+	$(call link,-T link/boot.ld link/shared.ld -o $@.full $(BOOT_GDB_OBJS),LINK)
+	$(call run,$(OBJDUMP) -S $@.full >$@.asm)
+	$(call run,$(NM) -n $@.full >$@.sym)
+	$(call run,$(OBJCOPY) -S -O binary -j .text $@.full $@)
+
 $(OBJDIR)/mkbootdisk: build/mkbootdisk.c $(BUILDSTAMPS)
 	$(call run,$(HOSTCC) -I. -o $(OBJDIR)/mkbootdisk,HOSTCOMPILE,build/mkbootdisk.c)
 
 os08.img: $(OBJDIR)/mkbootdisk $(OBJDIR)/bootsector $(OBJDIR)/kernel
 	$(call run,$(OBJDIR)/mkbootdisk $(OBJDIR)/bootsector $(OBJDIR)/kernel > $@,CREATE $@)
+
+os08-gdb.img: $(OBJDIR)/mkbootdisk $(OBJDIR)/bootsector-gdb $(OBJDIR)/kernel
+	$(call run,$(OBJDIR)/mkbootdisk $(OBJDIR)/bootsector-gdb $(OBJDIR)/kernel > $@,CREATE $@)
 
 
 run-%: run-qemu-%
@@ -96,11 +109,11 @@ run-monitor-%: %.img check-qemu
 run-gdb-%: run-gdb-$(QEMUDISPLAY)-%
 	@:
 
-run-gdb-graphic-%: %.img check-qemu
+run-gdb-graphic-%: %-gdb.img check-qemu
 	$(call run,$(QEMU_PRELOAD) $(QEMU) $(QEMUOPT) -gdb tcp::1234 $(QEMUIMG) &,QEMU $<)
 	$(call run,sleep 0.5; gdb -x .gdbinit,GDB)
 
-run-gdb-console-%: %.img check-qemu
+run-gdb-console-%: %-gdb.img check-qemu
 	$(call run,$(QEMU_PRELOAD) $(QEMU) $(QEMUOPT) -curses -gdb tcp::1234 $(QEMUIMG),QEMU $<)
 
 run: run-qemu-$(basename $(IMAGE))

@@ -35,6 +35,12 @@ static void boot_readseg(uintptr_t dst, uint32_t src_sect,
 // boot
 //    Load the kernel and jump to it.
 void boot(void) {
+#ifdef GDB
+    while (*(volatile int*) ELFHDR != 61) {
+        // Booting blocks until the user enters `bootc` at the GDB prompt.
+    }
+#endif
+
     // read 1st page off disk (should include programs as well as header)
     // and check validity
     boot_readseg((uintptr_t) ELFHDR, 1, PAGESIZE, PAGESIZE);
