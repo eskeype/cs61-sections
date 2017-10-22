@@ -1,4 +1,4 @@
-OS07, the Quotes OS
+OS08, the Quotes OS
 ===================
 
 Type `make run` to run our OS using the QEMU emulator. We expect this
@@ -83,7 +83,7 @@ declared and described in the files listed above.
 Build Files
 -----------
 
-The main output of the build process is a disk image, `os01.img`. QEMU
+The main output of the build process is a disk image, `os08.img`. QEMU
 "boots" off this disk image, but it could also boot on real hardware!
 The build process also produces other files that you can look at and
 puts them in the `obj/` directory.
